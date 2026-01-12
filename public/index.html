@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Socket.IO Two-Way Chat</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+        }
+
+        .header {
+            background: #1f2937;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        #messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        .msg {
+            margin-bottom: 12px;
+            max-width: 60%;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .me {
+            background: #2563eb;
+            color: white;
+            margin-left: auto;
+        }
+
+        .other {
+            background: #e5e7eb;
+            color: black;
+        }
+
+        .system {
+            text-align: center;
+            color: gray;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+
+        .footer {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #ddd;
+            background: white;
+        }
+
+        .footer input {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .footer button {
+            padding: 10px 18px;
+            margin-left: 8px;
+            background: #1f2937;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">Socket.IO Two-Way Chat</div>
+
+        <div id="messages"></div>
+
+        <div class="footer">
+            <input id="messageInput" placeholder="Type your message..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        let username = prompt("Enter your name:", "Suraj Hulagur");
+
+        if (!username || username.trim() === "") {
+            username = "Suraj Hulagur";
+        }
+
+        socket.emit("join", username);
+
+        function sendMessage() {
+            const input = document.getElementById("messageInput");
+            if (input.value.trim() !== "") {
+                socket.emit("chat message", input.value);
+                input.value = "";
+            }
+        }
+
+        socket.on("chat message", function (data) {
+            const div = document.createElement("div");
+            div.classList.add("msg");
+
+            if (data.user === username) {
+                div.classList.add("me");
+                div.textContent = "You: " + data.message;
+            } else {
+                div.classList.add("other");
+                div.textContent = data.user + ": " + data.message;
+            }
+
+            document.getElementById("messages").appendChild(div);
+        });
+
+        socket.on("system message", function (msg) {
+            const div = document.createElement("div");
+            div.classList.add("system");
+            div.textContent = msg;
+            document.getElementById("messages").appendChild(div);
+        });
+    </script>
+
+</body>
+
+</html>
